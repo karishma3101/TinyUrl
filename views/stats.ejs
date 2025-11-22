@@ -1,0 +1,149 @@
+<%- include('partials/header', { title: `Stats - ${link.shortCode} - TinyLink` }) %>
+
+<div class="mb-6">
+    <a href="/" class="text-indigo-600 hover:text-indigo-800 mb-4 inline-block">
+        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+    </a>
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Link Statistics</h1>
+    <p class="text-gray-600">Detailed analytics for your shortened link</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Short Code Card -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Short Code</h3>
+            <i class="fas fa-link text-indigo-600 text-2xl"></i>
+        </div>
+        <p class="text-2xl font-mono font-bold text-indigo-600 mb-2"><%= link.shortCode %></p>
+        <a 
+            href="<%= appUrl %>/<%= link.shortCode %>" 
+            target="_blank"
+            class="text-sm text-gray-500 hover:text-indigo-600"
+        >
+            <%= appUrl %>/<%= link.shortCode %>
+        </a>
+    </div>
+
+    <!-- Total Clicks Card -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Total Clicks</h3>
+            <i class="fas fa-mouse-pointer text-blue-600 text-2xl"></i>
+        </div>
+        <p class="text-4xl font-bold text-blue-600"><%= link.totalClicks %></p>
+        <p class="text-sm text-gray-500 mt-2">All-time clicks</p>
+    </div>
+</div>
+
+<!-- Target URL Card -->
+<div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">Target URL</h3>
+        <i class="fas fa-external-link-alt text-gray-400"></i>
+    </div>
+    <a 
+        href="<%= link.targetUrl %>" 
+        target="_blank"
+        class="text-indigo-600 hover:text-indigo-800 break-all"
+    >
+        <%= link.targetUrl %>
+    </a>
+</div>
+
+<!-- Additional Info -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Created At -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-calendar-plus text-gray-400 mr-2"></i>Created At
+        </h3>
+        <p class="text-gray-700">
+            <%= new Date(link.createdAt).toLocaleString() %>
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+            <%= Math.floor((new Date() - new Date(link.createdAt)) / (1000 * 60 * 60 * 24)) %> days ago
+        </p>
+    </div>
+
+    <!-- Last Clicked -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-clock text-gray-400 mr-2"></i>Last Clicked
+        </h3>
+        <% if (link.lastClickedTime) { %>
+            <p class="text-gray-700">
+                <%= new Date(link.lastClickedTime).toLocaleString() %>
+            </p>
+            <p class="text-sm text-gray-500 mt-1">
+                <%= Math.floor((new Date() - new Date(link.lastClickedTime)) / (1000 * 60)) %> minutes ago
+            </p>
+        <% } else { %>
+            <p class="text-gray-500 italic">Never clicked</p>
+        <% } %>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Actions</h3>
+    <div class="flex flex-wrap gap-3">
+        <button 
+            onclick="copyToClipboard('<%= appUrl %>/<%= link.shortCode %>')"
+            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+        >
+            <i class="fas fa-copy mr-2"></i>Copy Short Link
+        </button>
+        <a 
+            href="<%= appUrl %>/<%= link.shortCode %>"
+            target="_blank"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition inline-block"
+        >
+            <i class="fas fa-external-link-alt mr-2"></i>Test Redirect
+        </a>
+        <button 
+            onclick="deleteLink('<%= link.shortCode %>')"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+        >
+            <i class="fas fa-trash mr-2"></i>Delete Link
+        </button>
+    </div>
+</div>
+
+<script>
+const appUrl = '<%= appUrl %>';
+
+// Copy to clipboard
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard!');
+    }).catch(() => {
+        alert('Failed to copy to clipboard');
+    });
+}
+
+// Delete link
+async function deleteLink(code) {
+    if (!confirm(`Are you sure you want to delete the link with code "${code}"?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/links/${code}`, {
+            method: 'DELETE',
+        });
+        
+        if (response.ok || response.status === 204) {
+            window.location.href = '/';
+        } else {
+            const data = await response.json();
+            alert(`Error: ${data.error || 'Failed to delete link'}`);
+        }
+    } catch (error) {
+        alert('Error: Failed to delete link. Please try again.');
+    }
+}
+</script>
+
+<%- include('partials/footer') %>
+

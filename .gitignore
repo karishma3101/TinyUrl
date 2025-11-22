@@ -1,0 +1,19 @@
+node_modules/
+.env
+.DS_Store
+*.log
+dist/
+build/
+.prisma/
+.env.local
+.env.production
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
