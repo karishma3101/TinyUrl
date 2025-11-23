@@ -39,10 +39,30 @@ router.get('/:code', async (req, res) => {
       },
     });
 
-    // Redirect to target URL
-    res.redirect(302, link.targetUrl);
+    // Ensure targetUrl is absolute (starts with http:// or https://)
+    let redirectUrl = link.targetUrl.trim();
+    
+    // Log the redirect for debugging
+    console.log(`[REDIRECT DEBUG] Code: ${code}`);
+    console.log(`[REDIRECT DEBUG] targetUrl from DB: "${redirectUrl}"`);
+    console.log(`[REDIRECT DEBUG] targetUrl length: ${redirectUrl.length}`);
+    console.log(`[REDIRECT DEBUG] Starts with http: ${redirectUrl.startsWith('http://')}`);
+    console.log(`[REDIRECT DEBUG] Starts with https: ${redirectUrl.startsWith('https://')}`);
+    
+    // If it doesn't start with http:// or https://, it's invalid
+    if (!redirectUrl.startsWith('http://') && !redirectUrl.startsWith('https://')) {
+      console.error(`[REDIRECT ERROR] Invalid targetUrl for code ${code}: "${redirectUrl}"`);
+      console.error(`[REDIRECT ERROR] Full link object:`, JSON.stringify(link, null, 2));
+      return res.status(500).json({
+        error: 'Invalid target URL configuration',
+        details: `Target URL must start with http:// or https://. Got: "${redirectUrl}"`,
+      });
+    }
+
+    // Redirect to target URL (use 302 for temporary redirect)
+    res.redirect(302, redirectUrl);
   } catch (error) {
-    console.error('Error redirecting:', error);
+    console.error('[REDIRECT ERROR] Error redirecting:', error);
     res.status(500).json({
       error: 'Internal server error',
     });
@@ -50,4 +70,3 @@ router.get('/:code', async (req, res) => {
 });
 
 module.exports = router;
-
