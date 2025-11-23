@@ -14,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 // Set view engine to EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.set('trust proxy', true);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -114,4 +115,5 @@ process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
+// Trust proxy (important for Render/Railway)
 
